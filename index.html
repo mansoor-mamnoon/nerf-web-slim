@@ -2671,6 +2671,124 @@ python src/part0_calibrate.py \
     </li>
   </ul>
 
+  <h3>What changed from Part 2.4 (Lego) and what stayed the same</h3>
+
+  <p>
+    I did <em>not</em> rewrite NeRF from scratch for this part. I kept the core network and
+    renderer identical to Part&nbsp;2.4 and only changed what was necessary to handle my
+    own calibrated duck dataset. Below I summarize what stayed the same and what I changed.
+  </p>
+
+  <h4>What I kept the same</h4>
+  <ul>
+    <li>
+      <strong>NeRF network architecture.</strong> I use the exact same MLP as in Part&nbsp;2.4:
+      8 fully connected layers with width 256, and a skip connection at layer 4.
+      The input is a 3D point and a view direction, both passed through positional
+      encodings. The network outputs a density <code>σ</code> (how “solid” the point is)
+      and an RGB color in <code>[0,1]</code>.
+    </li>
+    <li>
+      <strong>Positional encodings.</strong> I keep the same frequencies:
+      <code>L_xyz = 10</code> for 3D positions and <code>L_dir = 4</code> for view
+      directions. This means the network sees the same kind of high-frequency features
+      in both the Lego and duck scenes.
+    </li>
+    <li>
+      <strong>Volume rendering function.</strong> I use the same front-to-back
+      compositing as in Part&nbsp;2.4:
+      <code>alpha = 1 − exp(−σ * Δ)</code>,
+      transmittance <code>T</code> computed via an exclusive
+      <code>cumprod(1 − alpha)</code>,
+      and final weights <code>w = alpha * T</code> to blend colors along each ray.
+      The <code>volume_render(...)</code> and <code>volrend(...)</code> functions
+      are unchanged.
+    </li>
+    <li>
+      <strong>Ray generation and rendering.</strong> I still generate rays with
+      <code>pixel_to_ray</code> and <code>make_all_rays</code>, and I still use
+      <code>render_image_all</code> to render a full image by marching rays through
+      the scene in chunks.
+    </li>
+    <li>
+      <strong>Training loop structure.</strong> The logic is the same: randomly sample
+      a batch of rays, run the NeRF on 64 samples per ray, volume-render the colors,
+      compute an MSE loss against the ground-truth pixels, and update the weights
+      with Adam. I log <code>loss</code>, <code>psnr</code>, and <code>val_psnr</code>
+      to <code>metrics.csv</code> in both parts.
+    </li>
+  </ul>
+
+  <h4>What I changed for my own duck dataset</h4>
+  <ul>
+    <li>
+      <strong>Dataset source and intrinsics.</strong>
+      In Part&nbsp;2.4 I used the provided synthetic Lego dataset
+      <code>lego_200x200.npz</code> and built the camera intrinsics from a single
+      scalar focal length. For Part&nbsp;2.6 I switch the CLI to
+      <code>--npz data/my_scan.npz</code> (my calibrated duck scan) and use
+      <code>load_intrinsics_from_npz</code> to read the full rectified camera matrix
+      <code>K_rect</code> that I estimated in Part&nbsp;0. This makes the rays match
+      my real phone camera instead of the synthetic Lego camera.
+    </li>
+    <li>
+      <strong>Near / far bounds along the ray.</strong>
+      The Lego scene lives roughly in the range <code>[2.0, 6.0]</code> in world units,
+      so Part&nbsp;2.4 uses <code>near = 2.0</code> and <code>far = 6.0</code>.
+      My duck is only tens of centimeters away from the camera, so in Part&nbsp;2.6
+      I shrink this to <code>near = 0.03</code> and <code>far = 0.45</code>.
+      This focuses samples on the actual object and table, instead of wasting samples
+      in empty space.
+    </li>
+    <li>
+      <strong>Learning rate and number of iterations.</strong>
+      For Lego I use a relatively aggressive learning rate
+      (<code>lr = 3e-3</code>) and can train for up to 20k iterations because the
+      dataset is clean and synthetic. For my real duck scene I reduce the learning rate
+      to <code>5e-4</code> and train for about <code>6000</code> iterations. The smaller
+      learning rate makes training more stable given real-world noise and pose
+      inaccuracies, and 6k steps are enough for this simpler scene.
+    </li>
+    <li>
+      <strong>Output directory and logging.</strong>
+      In Part&nbsp;2.4 I use a fixed <code>outdir</code> like
+      <code>outputs_part2_4_5000</code>. In Part&nbsp;2.6 I default to
+      <code>outputs_part2_6</code> and add support for an automatic timestamped name
+      when I want to run multiple experiments on different scans without overwriting
+      previous runs. The contents of the folder (renders, depth, acc, metrics) are the
+      same structure as in 2.4, just for a different dataset.
+    </li>
+    <li>
+      <strong>Orbit GIF for my scene.</strong>
+      The Lego starter code already comes with a set of test camera extrinsics
+      <code>c2ws_test</code> for a nice spherical path. My own dataset does not,
+      so in Part&nbsp;2.6 I add a helper <code>render_orbit_gif(...)</code> that:
+      (1) takes the position of the first training camera,
+      (2) builds a “look-at-origin” camera from that position, and
+      (3) rotates it around the scene using a simple rotation matrix
+      <code>rot_x(φ)</code>.
+      This produces the horizontal orbit GIF and the more vertical orbit GIF shown
+      above.
+    </li>
+    <li>
+      <strong>Scene scale and realism.</strong>
+      The Lego NeRF works in a clean, perfectly rendered world. My duck scene has
+      real lighting, sensor noise, and small calibration errors. Because I kept the
+      NeRF and volume renderer the same and only changed the dataset-specific pieces
+      (intrinsics, near/far, learning rate, and camera path), differences in quality
+      between Lego and the duck reconstruction can be directly attributed to the
+      dataset itself instead of a different model.
+    </li>
+  </ul>
+
+  <p>
+    In short: Part&nbsp;2.6 reuses the same NeRF “brain” and rendering code as Part&nbsp;2.4.
+    The main changes are adapting the camera model, depth range, learning rate, and camera
+    trajectory so that the same implementation can handle my own calibrated duck photos
+    instead of the provided synthetic Lego dataset.
+  </p>
+
+
   <h3>Novel-view GIFs — camera circling the duck</h3>
 
 <p>
