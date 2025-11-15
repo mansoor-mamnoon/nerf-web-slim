@@ -1,0 +1,11 @@
+Part 2.4/2.5 Deliverables
+- renders_train/train_iterXXXXX.png (periodic + final)
+- renders_val/val_iterXXXXX.png (periodic + final)
+- depth/depth_iterXXXXX.png (periodic + final)
+- acc/acc_iterXXXXX.png (periodic + final)
+- train_psnr_curve.png
+- metrics.csv (iter, loss, psnr, val_psnr)
+- ray_samples_train.png
+- spherical/spherical.(gif|mp4) if --render_spherical
+- model_latest.pt
+- config.json

@@ -1,0 +1,3 @@
+|rd|-1 max err: 2.22e-16
+t range: [2.000, 6.000]
+reproj RMSE (px) @ mid-sample: 1.98e-14

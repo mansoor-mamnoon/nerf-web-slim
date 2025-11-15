@@ -1,0 +1,23 @@
+{
+  "npz": "data/lego_200x200.npz",
+  "device": "mps",
+  "iters": 30000,
+  "batch": 4096,
+  "lr": 0.005,
+  "n_samples": 128,
+  "near": 2.6,
+  "far": 4.6,
+  "L_xyz": 10,
+  "L_dir": 4,
+  "width": 256,
+  "depth": 8,
+  "skip_at": 4,
+  "log_every": 100,
+  "render_every": 1000,
+  "save_every": 10000,
+  "outdir": "outputs_part2_4_final",
+  "seed": 0,
+  "one_image": false,
+  "jitter_after": 1000,
+  "jitter_scale": 1.0
+}

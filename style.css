@@ -1,0 +1,4 @@
+body { font-family: -apple-system, system-ui, Arial, sans-serif; margin: 2rem; line-height: 1.5; }
+h1,h2 { margin-top: 1.2rem; }
+.figrow { display: flex; gap: 12px; flex-wrap: wrap; }
+.figrow img { max-width: 420px; height: auto; border: 1px solid #ccc; border-radius: 6px; }

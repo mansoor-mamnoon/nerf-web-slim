@@ -1,0 +1,4 @@
+|rd|-1 max err=1.00e-12
+uv→pixel alignment: OK
+reproj RMSE(px) ≈ 2.16e-05
+batch cameras: {0: 100}

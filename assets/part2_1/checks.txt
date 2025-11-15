@@ -1,0 +1,5 @@
+dataset=train[0] HxW=200x200
+inverse max err: 1.33e-15
+center dir err: 5.55e-17
+reproj RMSE px: 2.28e-14
+|rd|-1 max err: 2.22e-16
