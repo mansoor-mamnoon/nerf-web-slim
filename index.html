@@ -501,8 +501,8 @@ figure.standard-fig figcaption {
     <h2>Part 0.1 — Calibrating My Camera</h2>
 
     <p>
-      Before doing anything NeRF-related, I needed my phone camera to “speak metric.”  
-      In practice, that meant estimating its intrinsic matrix <code>K</code> and distortion
+      Before doing anything NeRF-related, I needed my phone camera to talk to me in metric.  
+      This meant estimating its intrinsic matrix <code>K</code> and distortion
       coefficients <code>dist</code> from a printed ArUco board, so that later poses and rays
       are geometrically consistent.
     </p>
@@ -565,7 +565,7 @@ def build_custom_board(rows, cols, square_m, gap_x_m, gap_y_m, dict_name="DICT_4
     </pre>
 
     <p>
-      This matches the assignment’s requirement to define 3D coordinates for each tag corner (e.g. for a 0.02 m square you’d
+      This matched the assignment’s requirement to define 3D coordinates for each tag corner (e.g. for a 0.02 m square you’d
       use coordinates like <code>(0,0,0)</code>, <code>(0.02,0,0)</code>, etc.). I just generalized it to an entire grid.
     </p>
 
@@ -611,7 +611,7 @@ def select_min_markers(per_img, min_markers):
 
     <h3>Calibrating and Pruning</h3>
     <p>
-      After detection, I packed all the corners and IDs into the format expected by OpenCV’s ArUco
+      After detection, I packed all the corners and IDs into the format expected by OpenCV’s
       calibration routine and ran calibration twice: once on all valid frames, then again after
       pruning the worst reprojection errors.
     </p>
@@ -636,12 +636,6 @@ def calibrate(per_img, board, img_size):
     )
     return ret, K, dist, rvecs, tvecs
     </pre>
-
-    <p class="small-note">
-      The spec mentions <code>cv2.calibrateCamera()</code>; I use the ArUco-specific
-      <code>cv2.aruco.calibrateCameraAruco()</code>, which does the same thing but directly
-      understands ArUco boards.
-    </p>
 
     <p>
       To clean up outliers, I computed a per-image RMS reprojection error and kept only the best
@@ -760,7 +754,7 @@ python src/part0_calibrate.py \
     </ul>
   
     <p class="small-note">
-      I avoided auto-exposure jumps by using a printed tag instead of a screen, watched for motion blur, and kept distance roughly constant so the apparent object size stayed stable.
+      I avoided auto-exposure jumps by using a printed tag instead of a screen and watched for motion blur by making sure the object did not move between images.
     </p>
   
     <h3>Sampling and Quality Control</h3>
@@ -790,8 +784,7 @@ python src/part0_calibrate.py \
   
     <p>
       Frames without a detected tag (or with the wrong tag ID, if I set <code>--tag_id</code> &ge; 0) are marked
-      <code>detected = 0</code> and never considered for the top-K set. For each frame I also save an overlay with
-      <code>cv2.aruco.drawDetectedMarkers</code> so I can visually confirm detections.
+      <code>detected = 0</code> and never considered for the top-K set.
     </p>
   
     <h3>Gallery — Kept Frames</h3>
@@ -840,7 +833,7 @@ python src/part0_calibrate.py \
     <ol>
       <li>
         <strong>Detect the ArUco tag.</strong><br>
-        For each image in <code>data/scan_keep/</code>, I ran <code>cv2.aruco.ArucoDetector</code> to get:
+        For each image in <code>data/scan_keep/</code>, I ran my Aruco tag detector code to get:
         <ul>
           <li><code>corners</code>: 4 image points (TL, TR, BR, BL)</li>
           <li><code>ids</code>: the marker ID(s)</li>
@@ -886,7 +879,7 @@ python src/part0_calibrate.py \
       flags=cv2.SOLVEPNP_IPPE_SQUARE
   )
         </pre>
-        If IPPE failed, I fell back to <code>SOLVEPNP_ITERATIVE</code>. The outputs are:
+      The outputs are:
         <ul>
           <li><code>rvec</code> (3×1): axis–angle rotation</li>
           <li><code>tvec</code> (3×1): translation</li>
